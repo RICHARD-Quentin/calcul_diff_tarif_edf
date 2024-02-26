@@ -4,6 +4,15 @@ BEARER_TOKEN=<votre token>
 PERSONAL_EXT_ID=<votre id>
 ```
 
+Ajouter votre tarif dans le fichier .env
+```
+TARIF_PERSO=<votre tarif>
+```
+Liste des tarifs disponibles:
+- BASE
+- HP/HC
+- TEMPO
+
 ## Utilisation
 ```bash
 make main
