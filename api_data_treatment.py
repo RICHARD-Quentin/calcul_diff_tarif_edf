@@ -105,6 +105,7 @@ def get_tarif_tempo(date: str, conso_hp: float, conso_hc: float) -> Dict:
 
 def process_consumptions(consumptions: List[Consumption], tarif_base: float) -> List[Dict]:
     processed_data = []
+    errors = []
     for consumption in consumptions:
         try:
             date = consumption['period']['startTime'].split('T')[0]
@@ -132,7 +133,10 @@ def process_consumptions(consumptions: List[Consumption], tarif_base: float) -> 
                 "Cout tarif tempo HC": tempo['Conso HC'],
             })
         except Exception as e:
-            print("Error while processing consumption", e)
+            errors.append(f"Error while processing consumption for {consumption['period']['startTime']} : {e}")
+    
+    if len(errors) > 0:    
+        print(f"Error while processing consumption for {len(errors)} dates")
 
     return processed_data
 

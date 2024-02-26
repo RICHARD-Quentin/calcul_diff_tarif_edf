@@ -9,6 +9,7 @@ os.makedirs(folder_name, exist_ok=True)
 
 dotenv.load_dotenv()
 bearer = os.getenv("BEARER")
+person_ext_id = os.getenv("PERSON_EXT_ID")
 
 # Headers based on the cURL command
 headers = {
@@ -16,7 +17,7 @@ headers = {
     "accept-language": "fr,en-US;q=0.9,en;q=0.8",
     "authority": "equilibre.edf.fr",
     "authorization": f"Bearer {bearer}",  # Example token, replace with actual token
-    "person-ext-id": "6013732418",
+    "person-ext-id": person_ext_id,  # Example ID, replace with actual ID
     "sec-ch-ua-mobile": "?0",
     "sec-fetch-dest": "empty",
     "sec-fetch-mode": "cors",
@@ -26,22 +27,22 @@ headers = {
 }
 
 # Cookies parsed from the cURL command
-cookies = {
-    "9fa3e6ca36ada274b2f9b5bebeb44468": "4f9d8058a222af196467e3a57f7e08a9",
-    "_abck": "EEF67C435ECE6D11EADC826A288236B7~-1~YAAQreIlF8XHJSuMAQAANfp0Lw..."
-    # Add other cookies as needed
-}
+# cookies = {
+#     "9fa3e6ca36ada274b2f9b5bebeb44468": "4f9d8058a222af196467e3a57f7e08a9",
+#     "_abck": "EEF67C435ECE6D11EADC826A288236B7~-1~YAAQreIlF8XHJSuMAQAANfp0Lw..."
+#     # Add other cookies as needed
+# }
 
 def fetch_and_save_consumption_data(year):
     # Adjust these dates for the desired year
-    print(f"Fetching data for {year}...")
+    print(f"Fetching consumption data for {year}...")
     # print(f"Headers: {headers}")
     begin_ts = f"{year}-01-01T23:00:00.000Z"
     end_ts = f"{year}-12-31T23:00:00.000Z"
     
     url = f"https://equilibre.edf.fr/api/v2/sites/-/consumptions?beginTs={begin_ts}&endTs={end_ts}&stepUnit=DAYS&stepValue=1&withEstimated=SURROUNDING_ESTIMATED"
     
-    response = requests.get(url, headers=headers, cookies=cookies)
+    response = requests.get(url, headers=headers)
     
     if response.status_code == 200:
         # Write the response to a file named with the year in the 'api_data' folder

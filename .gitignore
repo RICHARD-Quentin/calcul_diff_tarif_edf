@@ -2,3 +2,4 @@ api_data/*
 api_results/*
 tempo/*
 .env
+__pycache__/*

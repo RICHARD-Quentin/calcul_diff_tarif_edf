@@ -27,6 +27,7 @@ headers = {
 }
 
 def fetch_and_save_tempo_data(year):
+    print(f"Fetching tempo data for {year}...")
     # Adjust these dates based on the year
     dateApplicationBorneInf = f"{year}-01-01"
     dateApplicationBorneSup = f"{year}-12-31"
