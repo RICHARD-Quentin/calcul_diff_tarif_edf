@@ -3,3 +3,4 @@ api_results/*
 tempo/*
 .env
 __pycache__
+desktop.ini
