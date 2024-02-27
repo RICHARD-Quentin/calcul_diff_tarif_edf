@@ -1,6 +1,5 @@
 import requests
 import os
-from datetime import datetime
 import dotenv
 
 # Create the directory if it doesn't exist

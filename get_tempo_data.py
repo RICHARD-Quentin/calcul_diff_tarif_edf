@@ -1,6 +1,5 @@
 import requests
 import os
-from datetime import datetime, timedelta
 
 # Create the directory if it doesn't exist
 folder_name = "tempo"

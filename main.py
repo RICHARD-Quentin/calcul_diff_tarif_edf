@@ -1,7 +1,5 @@
 import os
-import pandas as pd
 from api_data_treatment import treat_data
-
 from get_data_for_years import fetch_and_save_consumption_data
 from get_tempo_data import fetch_and_save_tempo_data
 from datetime import datetime
