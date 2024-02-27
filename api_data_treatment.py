@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import json
 import csv
 from typing import List, Dict
@@ -143,7 +144,7 @@ def get_tarif_tempo(date: str, conso_hp: float, conso_hc: float) -> Dict:
             "Conso Total": 0,
         }
 
-def process_consumptions(consumptions: List[Consumption], tarif_base: float) -> List[Dict]:
+# def process_consumptions(consumptions: List[Consumption], tarif_base: float) -> List[Dict]:
     processed_data = []
     errors = []
     for consumption in consumptions:
@@ -184,6 +185,42 @@ def process_consumptions(consumptions: List[Consumption], tarif_base: float) -> 
 
     return processed_data
 
+def process_consumptions(consumptions: dict, tarif_base: float) -> List[Dict]:
+    processed_data = []
+    errors = []
+    for date, value in consumptions.items():
+        if datetime.strptime(date, '%Y-%m-%d') > datetime.now() - timedelta(days=1):
+            continue
+
+        try:
+            date_formatted = '/'.join(reversed(date.split('-')))
+            total_energy = value['consumption']
+            total_cost_perso = value['cost']
+            additional_value = format_decimal(total_energy * tarif_base)
+            tempo = get_tarif_tempo(date, value["hp_hc"]["HP"], value["hp_hc"]["HC"])
+            calcul_hp_hc = get_tarif_hp_hc(date, value["tempo"]["HP"], value["tempo"]["HC"])
+
+            processed_data.append({
+                "Date": date_formatted,
+                "Consomation (kwh)": total_energy,
+                "Cout total Perso": total_cost_perso,
+                "Cout tarif base": additional_value,
+                "Cout tarif tempo total": tempo['Conso Total'],
+                "Cout tarif tempo HP": tempo['Conso HP'],
+                "Cout tarif tempo HC": tempo['Conso HC'],
+                "Cout total HP/HC": calcul_hp_hc['Conso Total'],
+                "Cout HP": calcul_hp_hc['Conso HP'],
+                "Cout HC": calcul_hp_hc['Conso HC'],
+            })
+        except Exception as e:
+            errors.append(f"Error while processing value for {value['period']['startTime']} : {e}")
+    
+    if len(errors) > 0:    
+        print(f"Error while processing consumption for {len(errors)} dates")
+
+    return processed_data
+
+
 def write_to_csv(data: List[Dict], file_path: str):
     total_cout_perso = 0
     total_cout_base = 0
@@ -196,10 +233,10 @@ def write_to_csv(data: List[Dict], file_path: str):
         writer.writeheader()
         for row in data:
             writer.writerow(row)
-            total_cout_perso += float(row['Cout total Perso (€)'].replace(',', '.'))
-            total_cout_base += float(row['Cout tarif base'].replace(',', '.'))
-            total_cout_tempo += float(row['Cout tarif tempo total'].replace(',', '.'))
-            total_cout_hp_hc += float(row['Cout total (€)'].replace(',', '.'))
+            total_cout_perso += float(row['Cout total Perso'])
+            total_cout_base += float(row['Cout tarif base'].replace(',','.'))
+            total_cout_tempo += float(row['Cout tarif tempo total'].replace(',','.'))
+            total_cout_hp_hc += float(row['Cout total HP/HC'].replace(',','.'))
 
         total_cout_perso_str = format_decimal(total_cout_perso)
         total_cout_tarif_base_str = format_decimal(total_cout_base)
@@ -210,16 +247,12 @@ def write_to_csv(data: List[Dict], file_path: str):
         writer.writerow({
             "Date": "Total",
             "Consomation (kwh)": "",
-            "Conso Perso HP": "",
-            "Conso Perso HC": "",
-            "Cout Perso HP": "",
-            "Cout Perso HC": "",
-            "Cout total (€)": total_cout_perso_str,
+            "Cout total Perso": total_cout_perso_str,
             "Cout tarif base": total_cout_tarif_base_str,
             "Cout tarif tempo total": total_cout_tarif_tempo_total_str,
             "Cout tarif tempo HP": "",
             "Cout tarif tempo HC": "",
-            "Cout total Perso (€)": total_cout_hp_hc_str,
+            "Cout total HP/HC": total_cout_hp_hc_str,
             "Cout HP": "",
             "Cout HC": "",
         })
@@ -227,7 +260,6 @@ def write_to_csv(data: List[Dict], file_path: str):
         last_row = data[-1]
         last_month = int(last_row['Date'].split('/')[1])
 
-        
         total_avec_abonement = total_cout_perso + last_month*tarif_abonnement[tarif_perso]
         total_avec_abonement_base = total_cout_base + last_month*tarif_abonnement['BASE']
         total_avec_abonement_tempo = total_cout_tempo + last_month*tarif_abonnement['TEMPO']
@@ -242,16 +274,12 @@ def write_to_csv(data: List[Dict], file_path: str):
         writer.writerow({
             "Date": "Total avec abonement",
             "Consomation (kwh)": "",
-            "Conso Perso HP": "",
-            "Conso Perso HC": "",
-            "Cout Perso HP": "",
-            "Cout Perso HC": "",
-            "Cout total (€)": total_avec_abonement_str,
+            "Cout total Perso": total_avec_abonement_str,
             "Cout tarif base": total_avec_abonement_base_str,
             "Cout tarif tempo total": total_avec_abonement_tempo_str,
             "Cout tarif tempo HP": "",
             "Cout tarif tempo HC": "",
-            "Cout total Perso (€)": total_cout_hp_hc_str,
+            "Cout total HP/HC": total_cout_hp_hc_str,
             "Cout HP": "",
             "Cout HC": "",
         })
@@ -267,7 +295,7 @@ def treat_data(year):
     format_jours_tempo(year)
     # for file in json_files:
     json_data = read_json_file('./api_data/' + str(year) + '.json')
-    consumptions = json_data.get('consumptions', [])
+    # consumptions = json_data.get('consumptions', [])
     tarif = tarif_base.get(str(year), 0)
-    processed_data = process_consumptions(consumptions, tarif)
+    processed_data = process_consumptions(json_data, tarif)
     write_to_csv(processed_data, './api_results/' + str(year) + '.csv')
