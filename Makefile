@@ -2,7 +2,7 @@ api:
 	python ./api_data_treatment.py
 
 main:
-	python ./main.py
+	py ./main.py
 
 install-requirements:
 	pip install -r requirements.txt

@@ -113,10 +113,10 @@ def fetch_and_save_consumption_data(year):
 
         hour = int(time.split(":")[0])
         consumption = period.get("energyMeter").get("total")
-        cost = period.get("cost").get("total")
+        cost = period.get("cost").get("total") - period.get("cost").get("standingCharge")
 
-        sorted_data[day]["hp_hc"]["HC" if hour in range(0, 8) or hour in range(12, 14) else "HP"] += consumption
-        sorted_data[day]["tempo"]["HC" if hour in range(0, 8) or hour in range(22, 24) else "HP"] += consumption
+        sorted_data[day]["hp_hc"]["HC" if hour in range(0, 6) or hour in range(12, 14) else "HP"] += consumption
+        sorted_data[day]["tempo"]["HP" if hour in range(6, 22) else "HC"] += consumption
         sorted_data[day]["consumption"] += consumption
         sorted_data[day]["cost"] += cost
 
